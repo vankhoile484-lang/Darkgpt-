@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌑 DARKGPT PRO — AI Dark Edition</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+  body{background:radial-gradient(circle at 20% 0%,#1a0b2e,#0a0a0a 60%,#000);color:#e6e6e6;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+  /* HEADER */
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:rgba(17,17,17,.9);backdrop-filter:blur(10px);border-bottom:1px solid #2a2a2a;box-shadow:0 0 24px rgba(120,0,255,.3)}
+  header h1{font-size:1.4rem;letter-spacing:2px;background:linear-gradient(90deg,#a855f7,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  header .badge{font-size:.75rem;color:#22c55e;padding:4px 10px;border:1px solid #14532d;border-radius:20px;background:#052e16}
+  header .badge::before{content:"● ";animation:blink 1s infinite}
+  @keyframes blink{50%{opacity:.2}}
+
+  /* MENU */
+  .menu{display:flex;flex-wrap:wrap;gap:8px;padding:10px 22px;background:#0a0a0a;border-bottom:1px solid #1f1f1f}
+  .menu button{background:#1a1a1a;color:#ddd;border:1px solid #333;padding:8px 14px;border-radius:8px;cursor:pointer;transition:.2s;font-size:.82rem;white-space:nowrap}
+  .menu button:hover{background:#2a1040;border-color:#a855f7;box-shadow:0 0 12px rgba(168,85,247,.5);transform:translateY(-1px)}
+  .menu button.primary{background:linear-gradient(135deg,#7c3aed,#22d3ee);color:#000;font-weight:700;border:none}
+
+  /* APP */
+  .app{flex:1;display:flex;overflow:hidden}
+
+  /* SIDEBAR */
+  .sidebar{width:320px;background:#0b0b0b;border-right:1px solid #1f1f1f;display:flex;flex-direction:column;transition:.3s}
+  .sidebar.hidden{width:0;overflow:hidden}
+  .sidebar h2{padding:12px 14px;font-size:.9rem;color:#a855f7;border-bottom:1px solid #1f1f1f;display:flex;justify-content:space-between;align-items:center}
+  .sidebar h2 small{color:#555;font-weight:400;font-size:.7rem}
+  #fileList{flex:1;overflow-y:auto;padding:8px}
+  .file-item{padding:9px 10px;margin-bottom:6px;background:#141414;border-radius:8px;cursor:pointer;border:1px solid #222;font-size:.8rem;transition:.2s;display:flex;justify-content:space-between;align-items:center;gap:6px}
+  .file-item:hover{background:#1e1033;border-color:#a855f7}
+  .file-item .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .file-item .tag{font-size:.6rem;padding:2px 6px;border-radius:4px;background:#3b0764;color:#c084fc;flex-shrink:0}
+  .file-item.cache .tag{background:#064e3b;color:#4ade80}
+  .file-item .dl{color:#22d3ee;font-size:.75rem;cursor:pointer;padding:2px 4px}
+  .file-item .dl:hover{color:#67e8f9}
+
+  .drop-zone{padding:14px;text-align:center;font-size:.75rem;color:#888;border:2px dashed #333;margin:10px;border-radius:10px;cursor:pointer;transition:.2s}
+  .drop-zone.drag{border-color:#a855f7;background:#1a0f2a;color:#c084fc}
+
+  /* CHAT */
+  .chat-container{flex:1;display:flex;flex-direction:column;min-width:0}
+  #chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+  .msg{max-width:78%;padding:12px 16px;border-radius:14px;line-height:1.55;font-size:.88rem;animation:fade .3s ease;word-wrap:break-word}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+  .msg.user{align-self:flex-end;background:linear-gradient(135deg,#7c3aed,#4c1d95);color:#fff;border-bottom-right-radius:3px}
+  .msg.bot{align-self:flex-start;background:#161616;border:1px solid #2a2a2a;border-bottom-left-radius:3px}
+  .msg.bot .thinking{font-size:.72rem;color:#a855f7;font-style:italic;margin-bottom:8px;padding:6px 10px;background:#1a0f2a;border-radius:8px;border-left:2px solid #a855f7;line-height:1.4}
+  .msg.bot .thinking::before{content:"🧠 "}
+  .msg .files{margin-top:8px;font-size:.72rem;color:#22d3ee;border-top:1px dashed #333;padding-top:6px}
+  .msg pre{background:#0a0a0a;padding:10px;border-radius:8px;font-size:.72rem;margin-top:6px;overflow-x:auto;color:#4ade80;border:1px solid #222}
+  .dots{display:inline-block;animation:dots 1.2s infinite}
+  @keyframes dots{0%,20%{content:""}40%{content:"."}60%{content:".."}80%,100%{content:"..."}}
+
+  /* INPUT */
+  .input-bar{display:flex;gap:10px;padding:14px;background:#0b0b0b;border-top:1px solid #1f1f1f}
+  .input-bar input{flex:1;background:#161616;border:1px solid #333;color:#eee;padding:12px 16px;border-radius:10px;outline:none;font-size:.88rem}
+  .input-bar input:focus{border-color:#a855f7;box-shadow:0 0 10px rgba(168,85,247,.3)}
+  .input-bar button{background:linear-gradient(135deg,#a855f7,#22d3ee);color:#000;font-weight:700;border:none;padding:0 22px;border-radius:10px;cursor:pointer;transition:.2s}
+  .input-bar button:hover{transform:scale(1.05)}
+  .input-bar button:active{transform:scale(.97)}
+
+  /* MODAL */
+  .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99;align-items:center;justify-content:center;padding:20px}
+  .modal.show{display:flex}
+  .modal-box{background:#111;border:1px solid #333;border-radius:14px;padding:22px;width:min(640px,100%);max-height:85vh;overflow-y:auto;box-shadow:0 0 40px rgba(168,85,247,.3)}
+  .modal-box h3{color:#a855f7;margin-bottom:14px;font-size:1rem}
+  .modal-box pre{background:#0a0a0a;padding:14px;border-radius:10px;font-size:.75rem;overflow-x:auto;color:#4ade80;border:1px solid #222}
+  .modal-box p{font-size:.85rem;line-height:1.7;color:#bbb;margin-bottom:10px}
+
+  ::-webkit-scrollbar{width:8px}
+  ::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
+  ::-webkit-scrollbar-thumb:hover{background:#a855f7}
+
+  @media(max-width:768px){
+    .sidebar{position:absolute;top:0;bottom:0;left:0;z-index:10;box-shadow:0 0 30px #000}
+    .app{position:relative}
+    .msg{max-width:90%}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌑 DARKGPT PRO</h1>
+  <span class="badge">ONLINE — Engine Gemini 3.6 Pro</span>
+</header>
+
+<div class="menu">
+  <button class="primary" onclick="document.getElementById('fileInput').click()">📂 Mở File</button>
+  <button onclick="document.getElementById('folderInput').click()">🎮 Lấy Cache Free Fire</button>
+  <button onclick="downloadAllCache()">⬇️ Gửi Lại (Tải) Cache</button>
+  <button onclick="toggleSidebar()">🗂️ Ẩn/Hiện</button>
+  <button onclick="showInfo()">ℹ️ Thông Tin</button>
+  <button onclick="clearChat()">🗑️ Xoá Chat</button>
+</div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <h2>📁 FILE & CACHE <small id="fileCount">0 file</small></h2>
+    <div class="drop-zone" id="dropZone">Kéo file vào đây<br>hoặc bấm "Mở File"</div>
+    <div id="fileList"></div>
+  </aside>
+
+  <!-- CHAT -->
+  <div class="chat-container">
+    <div id="chat">
+      <div class="msg bot">
+        <div class="thinking">Khởi động lõi suy luận Gemini 3.6 Pro... nạp module file & cache...</div>
+        Xin chào, tôi là <b>DarkGPT PRO</b> 🌑<br>
+        Tôi có thể: <b>đọc file</b>, <b>phân tích cache Free Fire</b>, <b>gửi/tải lại file</b>, và <b>trò chuyện thông minh</b>.<br><br>
+        👉 Thử bấm <b>"🎮 Lấy Cache Free Fire"</b> để chọn thư mục cache, hoặc kéo file vào thanh bên.
+      </div>
+    </div>
+    <div class="input-bar">
+      <input id="userInput" placeholder="Nhắn cho DarkGPT..." onkeydown="if(event.key==='Enter')sendMessage()">
+      <button onclick="sendMessage()">GỬI</button>
+    </div>
+  </div>
+</div>
+
+<!-- INPUT FILE / FOLDER -->
+<input type="file" id="fileInput" multiple style="display:none">
+<input type="file" id="folderInput" webkitdirectory directory multiple style="display:none">
+
+<!-- MODAL -->
+<div class="modal" id="infoModal">
+  <div class="modal-box">
+    <h3>ℹ️ DARKGPT PRO — Thông Tin</h3>
+    <p><b>Phiên bản:</b> 2.0 PRO Dark Edition<br>
+    <b>Engine:</b> Gemini 3.6 Pro (mô phỏng chain-of-thought reasoning)<br>
+    <b>Chức năng:</b> Đọc file, lấy cache Free Fire, gửi lại (tải) file, chat thông minh<br>
+    <b>Xử lý:</b> Toàn bộ trên trình duyệt (client-side) — không gửi dữ liệu đi đâu</p>
+    <h3 style="margin-top:16px">🎮 Đường dẫn Cache Free Fire</h3>
+    <pre>Android:
+/data/data/com.dts.freefireth/cache/
+/data/data/com.dts.freefireth/files/
+
+Giả lập / PC:
+.../Free Fire/cache/
+.../Free Fire/files/
+
+Các file thường gặp:
+- *.dat, *.obb, *.bin, *.json, *.cfg
+- UnityCache/, fb_cache/</pre>
+    <h3 style="margin-top:16px">🛠️ Cách dùng</h3>
+    <p>1. Bấm <b>"Lấy Cache Free Fire"</b> → chọn thư mục cache trên máy.<br>
+    2. DarkGPT đọc & phân tích từng file.<br>
+    3. Bấm <b>"Gửi Lại (Tải) Cache"</b> → tải toàn bộ file đã nạp về máy.<br>
+    4. Hoặc kéo file vào thanh bên để nạp thủ công.</p>
+  </div>
+</div>
+
+<script>
+/* ================= STATE ================= */
+const files = [];               // { name, size, type, isCache, blob, path }
+const fileContents = {};        // text content của file
+const chatHistory = [];         // lịch sử chat
+let cacheLoaded = false;
+
+/* ================= FILE HANDLING ================= */
+const fileInput = document.getElementById('fileInput');
+const folderInput = document.getElementById('folderInput');
+
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+folderInput.addEventListener('change', e => handleFiles(e.target.files, true));
+
+function handleFiles(fileList, isFolder = false) {
+  const arr = Array.from(fileList).filter(f => f.size > 0);
+  if (!arr.length) return;
+
+  let loaded = 0;
+  arr.forEach(f => {
+    const reader = new FileReader();
+    const isText = /\.(txt|json|log|xml|cache|dat|cfg|ini|properties|plist|html|js|css|md)$/i.test(f.name) && f.size < 2_000_000;
+
+    reader.onload = e => {
+      const relPath = f.webkitRelativePath || f.name;
+      files.push({
+        name: f.name,
+        path: relPath,
+        size: f.size,
+        type: f.type || 'unknown',
+        isCache: isFreeFireCache(f.name, relPath),
+        blob: f
+      });
+      if (isText) fileContents[f.name] = String(e.target.result).slice(0, 8000);
+      loaded++;
+      if (loaded === arr.length) {
+        renderFiles();
+        addMsg('bot',
+          `📥 Đã nạp <b>${arr.length} file</b>${isFolder ? ' từ thư mục cache' : ''}.<br>` +
+          `Tổng cộng: <b>${files.length}</b> file · Cache FF: <b>${files.filter(x=>x.isCache).length}</b>.<br>` +
+          `Tôi có thể phân tích, đọc nội dung hoặc tải lại cho bạn.`
+        );
+        if (arr.some(f => isFreeFireCache(f.name, f.webkitRelativePath))) cacheLoaded = true;
+      }
+    };
+    if (isText) reader.readAsText(f);
+    else {
+      files.push({
+        name: f.name, path: f.webkitRelativePath || f.name,
+        size: f.size, type: f.type || 'binary',
+        isCache: isFreeFireCache(f.name, f.webkitRelativePath), blob: f
+      });
+      loaded++;
+      if (loaded === arr.length) { renderFiles(); addMsg('bot', `📥 Đã nạp ${arr.length} file (nhị phân).`); }
+    }
+  });
+}
+
+function isFreeFireCache(name, path = '') {
+  return /freefire|com\.dts\.freefire|(^|\/)(cache|files|UnityCache|fb_cache)\//i.test(path + '/' + name)
+      || /\.(obb|dat|bin|unity3d|assetbundle)$/i.test(name);
+}
+
+function renderFiles() {
+  const list = document.getElementById('fileList');
+  document.getElementById('fileCount').textContent = files.length + ' file';
+  list.innerHTML = files.length ? '' : '<div style="color:#555;font-size:.78rem;padding:10px">Chưa có file nào</div>';
+
+  files.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'file-item' + (f.isCache ? ' cache' : '');
+    div.innerHTML =
+      `<span class="
